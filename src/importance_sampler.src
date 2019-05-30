@@ -1,0 +1,164 @@
+/*
+** This importance sampler allows you to specify
+** a weighting function and a sampling function.
+**
+** It uses a control structure to specify number of
+** of parameters input into the first
+*/
+#include sampler.sdf
+#include dynargs.dec
+
+
+proc(1) = importanceSamplerTDist(keep_draws, ...);
+    local theta_mean_is, th2mo_is, wsum, wsum2, st_indx, end_indx, theta_draw, w;
+    
+    // Get dynargs
+    struct importancecontrol iCtl;
+    iCtl = __getISparams(...);
+    
+    iCtl.keep_draws = keep_draws;
+    
+    // Start all importance sampling sums at zero
+    theta_mean_is = 0;
+    th2mo_is = 0;
+    
+    // Weight sums 
+    wsum = 0;
+    wsum2 = 0;
+    
+    // Storage matrices
+    theta_draw = zeros(iCtl.keep_draws, 1);
+    w = zeros(iCtl.keep_draws, 1);
+    
+    for i(1, iCtl.keep_draws, 1);
+        
+        /*
+        ** Importance sampling draw.
+        ** Current importance sampler draw from t-distribution
+        */
+        theta_draw[i] = iCtl.mean_is + sqrt(iCtl.scale_is)*rndTDist(1, iCtl.dof_is);
+        
+        // Calculate importance weight
+        w[i] = pdfn(theta_draw[i])/tDensity(theta_draw[i], iCtl.mean_is, iCtl.scale_is, iCtl.dof_is);
+ 
+        // Weighted sum of the importance sampler draws
+        theta_mean_is = theta_mean_is + w[i]*theta_draw[i];
+        
+        // Weighted sum of the square of the importance sampler draws
+        th2mo_is = th2mo_is + w[i]*theta_draw[i]^2;
+        
+        // Find sum of weights
+        wsum = wsum + w[i];
+        
+        // Find sum of squared weights
+        wsum2 = wsum2 + w[i]^2;
+        
+    endfor;
+    
+    struct importanceOut iOut;
+    iOut = __filliOut(theta_draw, theta_mean_is, th2mo_is, w, wsum, wsum2); 
+    
+    iOut = getStatsIS(iOut);
+    
+    retp(iOut);
+endp;
+
+proc (1) = __getISparams(...);
+    local ndynargs;
+    
+    struct importanceControl iCtl;
+    ndynargs = COUNT_DYNARGS;
+    
+    iCtl.mean_is = 0;
+        iCtl.scale_is = 1;
+        iCtl.dof_is = 2;
+    
+    if ndynargs>0;
+        iCtl.dof_is = sysstate(GET_N_DYNARGS, 1);
+    endif;
+    
+    if ndynargs>1;
+        iCtl.mean_is = sysstate(GET_N_DYNARGS, 2);
+    endif;
+    
+    if ndynargs>2;
+        iCtl.scale_is = sysstate(GET_N_DYNARGS, 3);
+    endif;
+    
+    retp(iCtl);
+endp;
+    
+proc(1) = __filliOut(theta_draw, theta_mean_is, th2mo_is, w, wsum, wsum2);
+    
+    struct importanceOut iOut;
+    
+    iOut.theta_mean_is = theta_mean_is;
+    iOut.theta_draw_is = theta_draw;
+    iOut.th2mo_is = th2mo_is;
+    iOut.w = w;
+    iOut.wsum = wsum;
+    iOut.wsum2 = wsum2;
+    
+    retp(iOut);
+endp;
+
+proc(1) = getStatsIS(struct importanceOut iOut);
+    // Find mean of theta
+    iOut.theta_mean_is = iOut.theta_mean_is/iOut.wsum;
+    
+    // Find mean of weights
+    iOut.wmean = iOut.wsum/rows(iOut.theta_draw_is);
+    
+    // Standard deviation of theta
+    iOut.theta_std_is = __getISstd(iOut.wsum, iOut.th2mo_is, iOut.theta_mean_is);
+    
+    // Standard deviation of weights
+    iOut.wstd = __getISstd(rows(iOut.theta_draw_is), iOut.wsum2, iOut.wmean);
+    
+    print "Importance Sampling Posterior Mean and Standard Deviation";
+    iOut.theta_mean_is iOut.theta_std_is;
+    
+    print "Mean and standard deviation of importance sampling weights";
+    print iOut.wmean iOut.wstd;
+    
+    retp(iOut);
+endp;
+
+
+proc(1) =  __getISstd(wsum, mean2, mean);
+    mean2 = mean2 / wsum;
+    retp(sqrt(mean2 - mean^2));
+endp;
+
+// Define a procedure to compute the t PDF
+proc (1) = tDensity(apoint, a_mean, acapv, adof);
+    
+    local ln_constant, dens;
+    /*
+    ** Evaluate univariate t density with
+    ** arguments amean, acapv and adof
+    ** at apoint
+    */
+    ln_constant =.5*ln(acapv) + .5*ln(pi) + lnfact(.5*adof - 1) - lnfact(.5*(adof + 1) - 1) - .5*adof*ln(adof);
+    dens = -.5*(adof + 1)*ln(adof + ((apoint - a_mean)^2)/acapv) - ln_constant;
+    
+    retp(exp(dens));
+endp;
+
+// Define procedure to draw t-distributed random numbers
+proc (1) = rndTDist(n, df);
+    // Local variables used only inside procedure
+    local z, x, t;
+    
+    // Draw from standard normal distribution
+    z = rndn(n, 1);
+    
+    // Draw from the chi-squared distribution
+    x = rndChiSquare(n, 1, df);
+    
+    // Compute the t-distribution RV
+    t = (z*sqrt(df))./sqrt(x);
+    
+    retp(t);
+endp; 
+

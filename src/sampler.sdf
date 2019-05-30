@@ -1,0 +1,36 @@
+struct importanceControl {
+    // Number of iterations to keep
+    scalar keep_draws;
+    
+    // Mean of importance sampler
+    scalar mean_is; 
+    
+    // Degrees of freedom
+    scalar dof_is;
+    
+    // Scale factor
+    scalar scale_is;
+};
+    
+struct importanceOut {
+    
+    // Individual draws
+    matrix theta_draw_is;
+    
+    // Individual weights
+    matrix w;
+    
+    // Storage for mean
+    matrix theta_mean_is;
+    matrix th2mo_is;
+    
+    // Sums for weights
+    matrix wsum;
+    matrix wsum2;  
+    
+    // Statistics
+    matrix theta_std_is;
+    matrix wmean;
+    matrix wstd;
+};
+    
