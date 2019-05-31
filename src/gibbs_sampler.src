@@ -1,0 +1,129 @@
+#include sampler.sdf
+#include dynargs.dec
+
+proc(1) = gibbsSamplerBiN(keep_draws, rho, ...);
+    local theta_1, theta_2, theta_1_init, theta_2_init, burn_in, ygs, mean_ygs, std_ygs; 
+    
+    // Get dynargs
+    {burn_in, theta_1_init, theta_2_init} = __getGibbsparams(keep_draws, ...);
+    
+    // Initialize the variables for the loop to zero again
+    theta_1 = zeros(burn_in + keep_draws, 1);
+    theta_2 = zeros(burn_in + keep_draws, 1);
+    
+    theta_1[1] = theta_1_init;
+    theta_2[1] = theta_2_init;
+    
+    // Start for loop
+    for i(2, burn_in + keep_draws, 1);
+        
+        // Draw theta_2 given theta_1
+        theta_2[i, 1] = ((1 - rho^2)^0.5)*rndn(1, 1)
+            + rho*theta_1[i-1, 1];
+        
+        // Draw theta_1 given theta_2
+        theta_1[i, 1] = ((1 - rho^2)^0.5)*rndn(1, 1)
+            + rho*theta_2[i, 1];
+        
+    endfor;
+    
+    // Output matrix concatenating theta_1 and theta_2
+    ygs = theta_1~theta_2;
+    ygs = ygs[burn_in+1:burn_in+keep_draws, .];
+    
+    {mean_ygs, std_ygs} = getStatsGibbsBiN(ygs);
+    
+    // Fill output structure
+    struct gibbsBiNOut gOut;
+    gOut.theta_draw_gibbs = theta_1~theta_2;
+    gOut.theta_mean_gibbs = mean_ygs;
+    gOut.theta_std_gibbs = std_ygs;
+    gOUt.theta_keep_gibbs = ygs;
+    
+    retp(gOut);
+endp;
+
+proc(2) = getStatsGibbsBiN(ygs);
+    local mean_ygs, std_ygs;
+    
+    // Mean of the Gibbs sample
+    mean_ygs = meanc(ygs);
+    
+    // Standard-deviation of Gibbs sampler
+    std_ygs = vcx(ygs);
+    
+    "---------------------------------------------------";
+    "Variance-Covariance Matrix from Gibbs Sampler";
+    "---------------------------------------------------";
+    "Sample Mean: ";;
+    mean_ygs;
+    
+    "Sample Variance-Covariance Matrix: ";
+    std_ygs;
+    
+    retp(mean_ygs, std_ygs);
+endp;
+
+proc (3) = __getGibbsparams(keep_draws, ...);
+    local ndynargs, burn_in, theta_1_init, theta_2_init;
+    
+    ndynargs = COUNT_DYNARGS;
+    burn_in = round(.10*keep_draws);
+    theta_1_init = 0;
+    theta_2_init = 0;
+    
+    if ndynargs>0;
+        burn_in = sysstate(GET_N_DYNARGS, 1);
+    endif;
+    
+    if ndynargs>2;
+        theta_1_init = sysstate(GET_N_DYNARGS, 2);
+    endif;
+    
+    if ndynargs>2;
+        theta_2_init = sysstate(GET_N_DYNARGS, 3);
+    endif;
+    
+    retp(burn_in, theta_1_init, theta_2_init);
+endp;
+
+
+//// Declare 'myGibbsPlot` to be a plotControl structure
+//struct plotControl myGibbsPlot;
+ 
+//// Fill 'myGibbsPlot' with 'XY' defaults
+//myGibbsPLot = plotGetDefaults("xy");
+ 
+//// Set the text interpreter to LaTex for axis labels only
+//plotSetTextInterpreter(&myGibbsPlot, "latex", "axes");
+ 
+//// Set plot title
+//plotSetTitle(&myGibbsPlot, "Bivariate Normal Gibbs Sampler", "Arial", 18);
+ 
+//// Set axis labels
+//plotSetYLabel(&myGibbsPlot, "\\theta_1", "Arial", 14);
+ 
+///*
+//** Change plot layout to 2 x 1 grid and place
+//** next plot in 1st cell
+//*/
+//plotLayout(2, 1, 1);
+ 
+//// Create a sequential vector counting iteration numbers
+//x_plot = seqa(1, 1, burn_in + keep_draws);
+ 
+//// Plot theta_1
+//plotXY(myGibbsPlot, x_plot, theta_1);
+ 
+///*
+//** Change plot layout to 2 x 1 grid and place
+//** next plot in 2nd cell
+//*/
+//plotLayout(2, 1, 2);
+ 
+//// Plot theta_1
+//plotXY(myGibbsPlot, x_plot, theta_2);
+ 
+//// Turn off plot grid for next plot
+//plotClearLayout();
+ 
