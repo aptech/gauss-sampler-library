@@ -74,15 +74,15 @@ proc (1) = __getISparams(...);
         iCtl.dof_is = 2;
     
     if ndynargs>0;
-        iCtl.dof_is = sysstate(GET_N_DYNARGS, 1);
+        iCtl.dof_is = sysstate(GET_ONE_DYNARG, 1);
     endif;
     
     if ndynargs>1;
-        iCtl.mean_is = sysstate(GET_N_DYNARGS, 2);
+        iCtl.mean_is = sysstate(GET_ONE_DYNARG, 2);
     endif;
     
     if ndynargs>2;
-        iCtl.scale_is = sysstate(GET_N_DYNARGS, 3);
+        iCtl.scale_is = sysstate(GET_ONE_DYNARG, 3);
     endif;
     
     retp(iCtl);

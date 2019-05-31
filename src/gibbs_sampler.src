@@ -73,15 +73,15 @@ proc (3) = __getGibbsparams(keep_draws, ...);
     theta_2_init = 0;
     
     if ndynargs>0;
-        burn_in = sysstate(GET_N_DYNARGS, 1);
+        burn_in = sysstate(GET_ONE_DYNARG, 1);
     endif;
     
     if ndynargs>2;
-        theta_1_init = sysstate(GET_N_DYNARGS, 2);
+        theta_1_init = sysstate(GET_ONE_DYNARG, 2);
     endif;
     
     if ndynargs>2;
-        theta_2_init = sysstate(GET_N_DYNARGS, 3);
+        theta_2_init = sysstate(GET_ONE_DYNARG, 3);
     endif;
     
     retp(burn_in, theta_1_init, theta_2_init);

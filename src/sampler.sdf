@@ -42,5 +42,11 @@ struct gibbsBiNOut {
     matrix theta_keep_gibbs;
 };
 
+struct metropolisOut {
+matrix theta_mean_mh;
+matrix theta_std_mh;
+matrix theta_draw_mh;
+matrix accepted_count_mh;
+};
 
 
