@@ -1,6 +1,38 @@
 #include sampler.sdf
 #include dynargs.dec
 
+/*
+**> metropolisHastingsIC
+**
+**  Purpose:    Runs Metropolis-Hastings sampler which generates and independent
+**              chain drawn from the random normal distribution.
+**
+**  Format:     mOut = metropolisHastingsIC(keep_draws);
+**              mOut = metropolisHastingsIC(keep_draws, burn_in);
+**              mOut = metropolisHastingsIC(keep_draws, burn_in, sd_ic);
+**              mOut = metropolisHastingsIC(keep_draws, burn_in, sd_ic, theta_init);
+**
+**  Input:      
+**              keep_draws     Scalar, total number of draws from sampler to keep.
+**                    
+**              burn_in        Scalar, total number of burn-in draws to pull. Default is 10% of keep_draws.
+**
+**              sd_ic          Scalar, standard deviation of Metropolis-Hastings draw.
+**
+**              theta_init     Scalar, initial starting theta value. 
+**
+**  Output:     mOut           An instance of the metropolisHastingsOut structure. The structure mOut contains
+**                             the following members:
+**
+**                  mOut.theta_mean_mh          Scalar, the mean of the sample.
+**
+**                  mOut.theta_std_mh           Scalar, the standard deviation of the sample.
+**
+**                  mOut.theta_draw_mh          Vector, the vector of accepted draws in the sample.
+**
+**                  mOut.accepted_count_mh      Scalar, the proporition of accepted candidate draws.             
+*/
+
 proc(1) = metropolisHastingsIC(keep_draws, ...);
     local burn_in, sd_ic, theta_init, theta_mean_ic, theta_std_mh,
         th2_mo_ic, theta_can_ic, acc_prob_ic, theta_draw_ic, count_ic, accepted_mh;
@@ -70,52 +102,38 @@ proc(1) = metropolisHastingsIC(keep_draws, ...);
     retp(mOut);
 endp;
 
-proc(3) = getStatsMH(keep_draws, count_ic, burn_in, theta_mean_sum, th2_mo_mh);
-    local theta_mean, thvar, th2_mo, accepted_mh;
-    
-    // Calculate mean using stored sum of theta
-    theta_mean = theta_mean_sum/keep_draws;
-    
-    // Calculate standard deviation
-    th2_mo = th2_mo_mh/keep_draws;
-    thvar = th2_mo - theta_mean.^2;
-    
-    print "Posterior Mean and Variance";
-    theta_mean;
-    thvar;
-    
-    print "Proportion of accepted candidate draws: Independence chain M-H";
-    accepted_mh = count_ic/(keep_draws+burn_in);
-    accepted_mh;
-    
-    retp(theta_mean, thvar, accepted_mh);
-endp;
 
-proc (3) = __getMHparams(keep_draws, ...);
-    local ndynargs, burn_in, theta_init, sd_ic;
-    
-    ndynargs = COUNT_DYNARGS;
-    
-    // Default values
-    burn_in = round(.10*keep_draws);
-    sd_ic = 1;
-    theta_init = 0;
-    
-    if ndynargs>0;
-        burn_in = sysstate(GET_ONE_DYNARG, 1);
-    endif;
-    
-    if ndynargs>1;
-        sd_ic = sysstate(GET_ONE_DYNARG, 2);
-    endif;
-    
-    if ndynargs>2;
-        theta_init = sysstate(GET_ONE_DYNARG, 3);
-    endif;
-    
-    retp(burn_in, sd_ic, theta_init);
-endp;
-
+/*
+**> metropolisHastingsIC
+**
+**  Purpose:    Runs Metropolis-Hastings sampler which generates a random walk
+**              chain.
+**
+**  Format:     mOut = metropolisHastingsIC(keep_draws);
+**              mOut = metropolisHastingsIC(keep_draws, burn_in);
+**              mOut = metropolisHastingsIC(keep_draws, burn_in, sd_rw);
+**              mOut = metropolisHastingsIC(keep_draws, burn_in, sd_rw, theta_init);
+**
+**  Input:      
+**              keep_draws     Scalar, total number of draws from sampler to keep.
+**                    
+**              burn_in        Scalar, total number of burn-in draws to pull. Default is 10% of keep_draws.
+**
+**              sd_rw          Scalar, standard deviation of Metropolis-Hastings draw.
+**
+**              theta_init     Scalar, initial starting theta value. 
+**
+**  Output:     mOut           An instance of the metropolisHastingsOut structure. The structure mOut contains
+**                             the following members:
+**
+**                  mOut.theta_mean_mh          Scalar, the mean of the sample.
+**
+**                  mOut.theta_std_mh           Scalar, the standard deviation of the sample.
+**
+**                  mOut.theta_draw_mh          Vector, the vector of accepted draws in the sample.
+**
+**                  mOut.accepted_count_mh      Scalar, the proporition of accepted candidate draws.             
+*/
 proc(1) = metropolisHastingsRW(keep_draws, ...);
     local burn_in, sd_rw, theta_init, theta_mean_rw, theta_std_mh,
         th2_mo_rw, theta_can_rw, acc_prob_rw, theta_draw_rw, count_rw, accepted_mh;
@@ -176,6 +194,52 @@ proc(1) = metropolisHastingsRW(keep_draws, ...);
     retp(mOut);
     
 endp;
+proc(3) = getStatsMH(keep_draws, count_ic, burn_in, theta_mean_sum, th2_mo_mh);
+    local theta_mean, thvar, th2_mo, accepted_mh;
+    
+    // Calculate mean using stored sum of theta
+    theta_mean = theta_mean_sum/keep_draws;
+    
+    // Calculate standard deviation
+    th2_mo = th2_mo_mh/keep_draws;
+    thvar = th2_mo - theta_mean.^2;
+    
+    print "Posterior Mean and Variance";
+    theta_mean;
+    thvar;
+    
+    print "Proportion of accepted candidate draws: Independence chain M-H";
+    accepted_mh = count_ic/(keep_draws+burn_in);
+    accepted_mh;
+    
+    retp(theta_mean, thvar, accepted_mh);
+endp;
+
+proc (3) = __getMHparams(keep_draws, ...);
+    local ndynargs, burn_in, theta_init, sd_ic;
+    
+    ndynargs = COUNT_DYNARGS;
+    
+    // Default values
+    burn_in = round(.10*keep_draws);
+    sd_ic = 1;
+    theta_init = 0;
+    
+    if ndynargs>0;
+        burn_in = sysstate(GET_ONE_DYNARG, 1);
+    endif;
+    
+    if ndynargs>1;
+        sd_ic = sysstate(GET_ONE_DYNARG, 2);
+    endif;
+    
+    if ndynargs>2;
+        theta_init = sysstate(GET_ONE_DYNARG, 3);
+    endif;
+    
+    retp(burn_in, sd_ic, theta_init);
+endp;
+
 
 
 
