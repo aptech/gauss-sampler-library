@@ -1,0 +1,181 @@
+#include sampler.sdf
+#include dynargs.dec
+
+proc(1) = metropolisHastingsIC(keep_draws, ...);
+    local burn_in, sd_ic, theta_init, theta_mean_ic, theta_std_mh,
+        th2_mo_ic, theta_can_ic, acc_prob_ic, theta_draw_ic, count_ic, accepted_mh;
+    
+    {burn_in, sd_ic, theta_init} = __getMHparams(keep_draws, ...);
+    
+    // Initialize MH sums to zero
+    theta_mean_ic = 0;
+    th2_mo_ic = 0;
+    theta_draw_ic = zeros(keep_draws+burn_in, 1);
+    
+    /*
+    ** Specify starting value for
+    ** independent chain theta draw
+    */
+    theta_draw_ic[1, 1] = theta_init;
+    
+    // Set count of the number of accepted draws
+    count_ic = 0;
+    
+    for i(2, burn_in+keep_draws, 1);
+        // Candidate draw from normal distribution
+        theta_can_ic = sd_ic*rndn(1, 1);
+        
+        // Calculate acceptance probability
+        acc_prob_ic = minc(exp(.5*(abs(theta_draw_ic[i-1, 1]) - abs(theta_can_ic) +
+            (theta_can_ic/sd_ic)^2 - (theta_draw_ic[i-1, 1]/sd_ic)^2))|1);
+        
+        /*
+        ** Accept candidate draw with probability
+        ** theta_can_ic
+        */
+        if acc_prob_ic > rndu(1, 1);
+            theta_draw_ic[i, 1] = theta_can_ic;
+            count_ic = count_ic + 1;
+        else;
+            theta_draw_ic[i, 1] = theta_draw_ic[i-1, 1];
+        endif;
+        
+        // Discard r0 burn-in draws
+        if i>burn_in;
+            /*
+            ** This keep_draws a running sum of
+            ** of theta. It can be used to
+            ** find the mean of theta.
+            */
+            theta_mean_ic = theta_mean_ic + theta_draw_ic[i, 1];
+            
+            /*
+            ** This keep_draws a running sum of
+            ** of square of theta. It will
+            ** be used to find the standard
+            ** deviation of theta.
+            */
+            th2_mo_ic = th2_mo_ic + theta_draw_ic[i, 1].^2;
+        endif;
+    endfor;
+    
+    {theta_mean_ic, theta_std_mh, accepted_mh} = getStatsMH(keep_draws, count_ic, burn_in, theta_mean_ic, th2_mo_ic);
+    
+    struct metropolisOut mOut;
+    mOut.theta_mean_mh = theta_mean_ic;
+    mOut.theta_draw_mh = theta_draw_ic;
+    mOut.theta_std_mh = theta_std_mh;
+    mOut.accepted_count_mh = accepted_mh;
+    
+    retp(mOut);
+endp;
+
+proc(3) = getStatsMH(keep_draws, count_ic, burn_in, theta_mean_sum, th2_mo_mh);
+    local theta_mean, thvar, th2_mo, accepted_mh;
+    
+    // Calculate mean using stored sum of theta
+    theta_mean = theta_mean_sum/keep_draws;
+    
+    // Calculate standard deviation
+    th2_mo = th2_mo_mh/keep_draws;
+    thvar = th2_mo - theta_mean.^2;
+    
+    print "Posterior Mean and Variance";
+    theta_mean;
+    thvar;
+    
+    print "Proportion of accepted candidate draws: Independence chain M-H";
+    accepted_mh = count_ic/(keep_draws+burn_in);
+    accepted_mh;
+    
+    retp(theta_mean, thvar, accepted_mh);
+endp;
+
+proc (3) = __getMHparams(keep_draws, ...);
+    local ndynargs, burn_in, theta_init, sd_ic;
+    
+    ndynargs = COUNT_DYNARGS;
+    
+    // Default values
+    burn_in = round(.10*keep_draws);
+    sd_ic = 1;
+    theta_init = 0;
+    
+    if ndynargs>0;
+        burn_in = sysstate(GET_ONE_DYNARG, 1);
+    endif;
+    
+    if ndynargs>1;
+        sd_ic = sysstate(GET_ONE_DYNARG, 2);
+    endif;
+    
+    if ndynargs>2;
+        theta_init = sysstate(GET_ONE_DYNARG, 3);
+    endif;
+    
+    retp(burn_in, sd_ic, theta_init);
+endp;
+
+proc(1) = metropolisHastingsRW(keep_draws, ...);
+    local burn_in, sd_rw, theta_init, theta_mean_rw, theta_std_mh,
+        th2_mo_rw, theta_can_rw, acc_prob_rw, theta_draw_rw, count_rw, accepted_mh;
+    
+    {burn_in, sd_rw, theta_init} = __getMHparams(keep_draws, ...);
+    
+    // Initialize MH sums to zero
+    theta_mean_rw = 0;
+    th2_mo_rw = 0;
+    theta_draw_rw = zeros(keep_draws+burn_in, 1);
+    
+    // Specify starting value for random walk chain theta draw
+    theta_draw_rw[1, 1] = theta_init;
+    
+    // Set count of the number of accepted draws
+    count_rw = 0;
+    
+    for i(2, burn_in+keep_draws, 1);
+        // Draw a candidate for random walk chain
+        theta_can_rw = theta_draw_rw[i-1, 1] + sd_rw*rndn(1, 1);
+        
+        // Calculate acceptance probability
+        acc_prob_rw = minc(exp(.5*(abs(theta_draw_rw[i-1, 1]) - abs(theta_can_rw)))|1);
+        
+        // Accept candidate draw with probability acc_prob_rw
+        if acc_prob_rw > rndu(1, 1);
+            theta_draw_rw[i, 1] = theta_can_rw;
+            count_rw = count_rw+1;
+        else;
+            theta_draw_rw[i, 1] = theta_draw_rw[i-1, 1];
+        endif;
+        
+        //Discard r0 burn-in draws
+        if i>burn_in;
+            /*
+            ** This keep_draws a running sum of
+            ** of theta. It can be used to
+            ** find the mean of theta.
+            */
+            theta_mean_rw = theta_mean_rw + theta_draw_rw[i,1];
+            /*
+            ** This keep_draws a running sum of
+            ** of square of theta. It will
+            ** be used to find the standard
+            ** deviation of theta.
+            */
+            th2_mo_rw = th2_mo_rw + theta_draw_rw[i, 1].^2;
+        endif;
+    endfor;
+    
+    {theta_mean_rw, theta_std_mh, accepted_mh} = getStatsMH(keep_draws, count_rw, burn_in, theta_mean_rw, th2_mo_rw);
+    
+    struct metropolisOut mOut;
+    mOut.theta_mean_mh = theta_mean_rw;
+    mOut.theta_draw_mh = theta_draw_rw;
+    mOut.theta_std_mh = theta_std_mh;
+    mOut.accepted_count_mh = accepted_mh;
+    retp(mOut);
+    
+endp;
+
+
+
