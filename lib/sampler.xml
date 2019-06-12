@@ -1,0 +1,7 @@
+<app>
+<name>samplerlib</name>
+<source>sampler.sdf</source>
+<source>importance_sampler.src</source>
+<source>gibbs_sampler.src</source>
+<source>metropolis_sampler.src</source>
+</app>
