@@ -17,9 +17,9 @@
 **                    
 **              burn_in        Scalar, total number of burn-in draws to pull. Default is 10% of keep_draws.
 **
-**              sd_ic          Scalar, standard deviation of Metropolis-Hastings draw.
+**              sd_ic          Scalar, standard deviation of Metropolis-Hastings draw. Default = 1.
 **
-**              theta_init     Scalar, initial starting theta value. 
+**              theta_init     Scalar, initial starting theta value. Default = 0.
 **
 **  Output:     mOut           An instance of the metropolisHastingsOut structure. The structure mOut contains
 **                             the following members:
@@ -30,7 +30,7 @@
 **
 **                  mOut.theta_draw_mh          Vector, the vector of accepted draws in the sample.
 **
-**                  mOut.accepted_count_mh      Scalar, the proporition of accepted candidate draws.             
+**                  mOut.accepted_count_mh      Scalar, the proportion of accepted candidate draws.             
 */
 
 proc(1) = metropolisHastingsIC(keep_draws, ...);

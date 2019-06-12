@@ -1,13 +1,42 @@
-/*
-** This importance sampler allows you to specify
-** a weighting function and a sampling function.
-**
-** It uses a control structure to specify number of
-** of parameters input into the first
-*/
+
 #include sampler.sdf
 #include dynargs.dec
 
+/*
+**> importanceSamplerTDist
+**
+**  Purpose:    Runs an importance sampler which uses the t-distribution to estimate the
+**              the parameters of the standard normal distriution.
+**
+**  Format:     iOut = importanceSamplerTDist(keep_draws);
+**              iOut = importanceSamplerTDist(keep_draws, dof_is);
+**              iOut = importanceSamplerTDist(keep_draws, dof_is, mean_is);
+**              iOut = importanceSamplerTDist(keep_draws, dof_is, mean_is, scale_is);
+**
+**  Input:      
+**              keep_draws      Scalar, total number of draws from sampler to keep.
+**                    
+**              dof_is          Optional input, Scalar, the degrees of freedom of the t-distribution. Default = 2.
+**
+**              mean_is         Optional input, Scalar, the mean of the importance function. Default = 0.
+**
+**              scale_is        Optional input, Scalar, the scale factor of the importance function. Default = 1.
+**
+**  Output:     iOut            An instance of the importanceOut structure. The structure iOut contains
+**                              the following members:
+**
+**                  iOut.theta_draw_is          Vector, sequence of draws from the importance sampler.
+**
+**                  iOut.theta_mean_is          Scalar, importance sampler posterior mean.
+**
+**                  iOut.theta_std_is           Scalar, importance sampler posterior standard deviation.
+**
+**                  iOut.w                      Vector, the importance weights.      
+**
+**                  iOut.wmean                  Scalar, the mean of importance sampling weights.       
+**
+**                  iOut.wstd                   Scalar, standard deviation of importance sampling weights.
+*/
 
 proc(1) = importanceSamplerTDist(keep_draws, ...);
     local theta_mean_is, th2mo_is, wsum, wsum2, st_indx, end_indx, theta_draw, w;
@@ -22,7 +51,7 @@ proc(1) = importanceSamplerTDist(keep_draws, ...);
     theta_mean_is = 0;
     th2mo_is = 0;
     
-    // Weight sums 
+    // Weight sums
     wsum = 0;
     wsum2 = 0;
     
@@ -35,12 +64,13 @@ proc(1) = importanceSamplerTDist(keep_draws, ...);
         /*
         ** Importance sampling draw.
         ** Current importance sampler draw from t-distribution
+        ** This draw is q(x)
         */
         theta_draw[i] = iCtl.mean_is + sqrt(iCtl.scale_is)*rndTDist(1, iCtl.dof_is);
         
         // Calculate importance weight
         w[i] = pdfn(theta_draw[i])/tDensity(theta_draw[i], iCtl.mean_is, iCtl.scale_is, iCtl.dof_is);
- 
+        
         // Weighted sum of the importance sampler draws
         theta_mean_is = theta_mean_is + w[i]*theta_draw[i];
         
@@ -56,7 +86,7 @@ proc(1) = importanceSamplerTDist(keep_draws, ...);
     endfor;
     
     struct importanceOut iOut;
-    iOut = __filliOut(theta_draw, theta_mean_is, th2mo_is, w, wsum, wsum2); 
+    iOut = __filliOut(theta_draw, theta_mean_is, th2mo_is, w, wsum, wsum2);
     
     iOut = getStatsIS(iOut);
     
@@ -70,8 +100,8 @@ proc (1) = __getISparams(...);
     ndynargs = COUNT_DYNARGS;
     
     iCtl.mean_is = 0;
-        iCtl.scale_is = 1;
-        iCtl.dof_is = 2;
+    iCtl.scale_is = 1;
+    iCtl.dof_is = 2;
     
     if ndynargs>0;
         iCtl.dof_is = sysstate(GET_ONE_DYNARG, 1);
@@ -87,7 +117,7 @@ proc (1) = __getISparams(...);
     
     retp(iCtl);
 endp;
-    
+
 proc(1) = __filliOut(theta_draw, theta_mean_is, th2mo_is, w, wsum, wsum2);
     
     struct importanceOut iOut;
@@ -160,5 +190,5 @@ proc (1) = rndTDist(n, df);
     t = (z*sqrt(df))./sqrt(x);
     
     retp(t);
-endp; 
+endp;
 

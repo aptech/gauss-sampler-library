@@ -1,6 +1,37 @@
 #include sampler.sdf
 #include dynargs.dec
 
+/*
+**> gibbsSamplerBiN
+**
+**  Purpose:    Runs an Gibbs sampler to estimate the mean and variance of 
+**              a bivariate normal distribution.
+**
+**  Format:     gOut = gibbsSamplerBiN(keep_draws, rho);
+**              gOut = gibbsSamplerBiN(keep_draws, rho, burn_in);
+**              gOut = gibbsSamplerBiN(keep_draws, rho, burn_in, theta_1_init);
+**              gOut = gibbsSamplerBiN(keep_draws, rho, burn_in, theta_1_init, theta_2_init);
+**
+**  Input:      
+**              keep_draws      Scalar, total number of draws from sampler to keep.
+**                    
+**              rho             Scalar, the correlation parameter.
+**
+**              burn_in         Optional input, Scalar, the number of burn-in iterations. Default = 10% of kept draws.
+**
+**              theta_1_init    Optional input, Scalar, the initial value of theta_1. Default = 0.
+**
+**              theta_2_init    Optional input, Scalar, the initial value of theta_2. Default = 0.
+**
+**  Output:     gOut            An instance of the importanceOut structure. The structure gOut contains
+**                              the following members:
+**
+**                  gOut.theta_keep_gibbs       Matrix, sequence of kept draws from the Gibbs sampler.
+**
+**                  gOut.theta_mean_gibbs       Matrix, Gibbs sampler posterior mean.
+**
+**                  gOut.theta_std_gibbs        Scalar, Gibbs sampler posterior standard deviation.
+*/
 proc(1) = gibbsSamplerBiN(keep_draws, rho, ...);
     local theta_1, theta_2, theta_1_init, theta_2_init, burn_in, ygs, mean_ygs, std_ygs; 
     
@@ -35,7 +66,7 @@ proc(1) = gibbsSamplerBiN(keep_draws, rho, ...);
     
     // Fill output structure
     struct gibbsBiNOut gOut;
-    gOut.theta_draw_gibbs = theta_1~theta_2;
+//    gOut.theta_draw_gibbs = theta_1~theta_2;
     gOut.theta_mean_gibbs = mean_ygs;
     gOut.theta_std_gibbs = std_ygs;
     gOUt.theta_keep_gibbs = ygs;
@@ -76,7 +107,7 @@ proc (3) = __getGibbsparams(keep_draws, ...);
         burn_in = sysstate(GET_ONE_DYNARG, 1);
     endif;
     
-    if ndynargs>2;
+    if ndynargs>1;
         theta_1_init = sysstate(GET_ONE_DYNARG, 2);
     endif;
     
