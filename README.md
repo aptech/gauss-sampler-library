@@ -22,9 +22,9 @@ The GAUSS sampler library can be easily installed using the [**GAUSS Application
 
 3. Follow the installer prompts, making sure to navigate to the downloaded `samplerlib.zip`.
 4. Before using the functions created by `samplerlib` you will need to load the newly created `samplerlib` library. This can be done in a number of ways:
-  *   Navigate to the library tool view window and click the small wrench located next to the `samplerlib` library. Select `Load Library`.  
+  *   Navigate to the **Library Tool Window** and click the small wrench located next to the `samplerlib` library. Select `Load Library`.  
   ![load library](images/load_sampler.jpg)
-  *  Enter `library samplerlib` in the program input/output window.
+  *  Enter `library samplerlib` in the **Program Input/output Window**.
   *  Put the line `library samplerlib;` at the beginning of your program files.
 
   Note: I have provided the individual files found in `samplerlib.zip` for examination and review. However, installation should always be done using the `samplerlib.zip` folder and the **GAUSS Application Installer**.
