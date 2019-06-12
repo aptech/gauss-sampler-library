@@ -1,4 +1,6 @@
-#include metropolis_sampler.src
+new;
+library samplerlib;
+
 /*
 ** Set up Metropolis Hastings chain
 ** Discard r0 burnin replications

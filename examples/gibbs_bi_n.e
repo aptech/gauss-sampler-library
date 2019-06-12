@@ -1,5 +1,5 @@
-#include gibbs_sampler.src
-#include sampler.sdf
+new;
+library samplerlib;
 
 /*
 ** Gibbs Sampler Specifications

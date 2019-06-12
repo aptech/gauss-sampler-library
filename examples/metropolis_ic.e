@@ -1,4 +1,5 @@
-#include metropolis_sampler.src
+new;
+library samplerlib;
 
 /*
 ** Set up Metropolis Hastings chain
@@ -23,3 +24,6 @@ rndseed 97980;
 
 struct metropolisOut mOut;
 mOut = metropolisHastingsIC(keep_draws, burn_in, sd_ic, theta_init);
+
+plotScatter(seqa(1,1, rows(mOut.theta_draw_mh)), mOut.theta_draw_mh);
+
