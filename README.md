@@ -16,7 +16,7 @@ The program files require a working copy of [**GAUSS 19**](www.aptech.com). Many
 ### Installing
 The GAUSS sampler library can be easily installed using the [**GAUSS Application Installer**](https://www.aptech.com/support/installation/using-the-applications-installer-wizard/), as shown below:
 
-1. Download the zipped folder `samplerlib.zip`.
+1. Download the zipped folder `samplerlib.zip` from the [GitHub Sampler Release](https://github.com/aptech/gauss-sampler-library/releases) page.
 2. Select **Tools > Install Application** from the main **GAUSS** menu.  
 ![install wizard](images/install_application.png)  
 
