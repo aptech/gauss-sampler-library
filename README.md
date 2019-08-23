@@ -27,7 +27,7 @@ The GAUSS sampler library can be easily installed using the [**GAUSS Application
   *  Enter `library samplerlib` in the **Program Input/output Window**.
   *  Put the line `library samplerlib;` at the beginning of your program files.
 
-  Note: I have provided the individual files found in `samplerlib.zip` for examination and review. However, installation should always be done using the `samplerlib.zip` folder and the **GAUSS Application Installer**.
+>  Note: I have provided the individual files found in [`samplerlib.zip`](https://github.com/aptech/gauss-sampler-library/releases) for examination and review. However, installation should always be done using the [`samplerlib.zip` folder from the release page](https://github.com/aptech/gauss-sampler-library/releases) and the [**GAUSS Application Installer**](https://www.aptech.com/support/installation/using-the-applications-installer-wizard/).
 
 ## Authors
 [Erica Clower](mailto:eclower@aptech.com)  
