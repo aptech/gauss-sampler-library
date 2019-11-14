@@ -1,0 +1,20 @@
+{
+    "author": "Erica Clower",
+    "deps": [
+    ],
+    "description": "The GAUSS sampler library is a collection of GAUSS procedures and examples developed to implement :\n\n    An example importance sampler\n    An example Gibbs sampler\n    An example Random Walk and Independent Chain Metropolis-Hastings sampler",
+    "dlib": [
+    ],
+    "keywords": [
+    ],
+    "license": "",
+    "name": "samplerlib",
+    "repo": "",
+    "src": [
+        "sampler.sdf",
+        "importance_sampler.src",
+        "gibbs_sampler.src",
+        "metropolis_sampler.src"
+    ],
+    "version": "0.1.0"
+}
