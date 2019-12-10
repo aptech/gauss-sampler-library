@@ -30,7 +30,7 @@ The GAUSS sampler library can be easily installed using the [**GAUSS Application
 >  Note: I have provided the individual files found in [`samplerlib.zip`](https://github.com/aptech/gauss-sampler-library/releases) for examination and review. However, installation should always be done using the [`samplerlib.zip` folder from the release page](https://github.com/aptech/gauss-sampler-library/releases) and the [**GAUSS Application Installer**](https://www.aptech.com/support/installation/using-the-applications-installer-wizard/).
 
 ## Authors
-[Erica Clower](mailto:eclower@aptech.com)  
+[Erica Clower](mailto:erica@aptech.com)  
 [Aptech Systems, Inc](https://www.aptech.com/)  
 [![alt text][1.1]][1]
 [![alt text][2.1]][2]
